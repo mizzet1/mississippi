@@ -64,9 +64,11 @@ defmodule Mississippi.Consumer.ConsumersSupervisor do
     [
       mississippi_config: [
         type: :keyword_list,
+        default: [],
         keys: [
           queues: [
             type: :keyword_list,
+            default: [],
             keys: [
               events_exchange_name: [
                 type: :string,
