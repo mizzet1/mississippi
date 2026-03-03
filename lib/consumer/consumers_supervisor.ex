@@ -25,6 +25,8 @@ defmodule Mississippi.Consumer.ConsumersSupervisor do
 
     queues_config = init_arg[:queues]
 
+    distribution_strategy = distribution_strategy!(init_arg[:cluster_distribution_strategy])
+
     children = [
       {Registry, [keys: :unique, name: DataUpdater.Registry, members: :auto]},
       {Registry, [keys: :unique, name: MessageTracker.Registry, members: :auto]},
@@ -35,19 +37,19 @@ defmodule Mississippi.Consumer.ConsumersSupervisor do
        members: :auto,
        process_redistribution: :active,
        extra_arguments: [message_handler: message_handler],
-       distribution_strategy: Horde.UniformQuorumDistribution},
+       distribution_strategy: distribution_strategy},
       {DynamicSupervisor,
        strategy: :one_for_one,
        name: MessageTracker.Supervisor,
        members: :auto,
        process_redistribution: :active,
-       distribution_strategy: Horde.UniformQuorumDistribution},
+       distribution_strategy: distribution_strategy},
       {DynamicSupervisor,
        strategy: :one_for_one,
        name: AMQPDataConsumer.Supervisor,
        members: :auto,
        process_redistribution: :active,
-       distribution_strategy: Horde.UniformQuorumDistribution},
+       distribution_strategy: distribution_strategy},
       # This will make queue listeners start after re-sharding in a multi-node cluster
       {NodeListener, queues_config},
       # This will make queue listeners start in a single-node cluster
@@ -117,9 +119,20 @@ defmodule Mississippi.Consumer.ConsumersSupervisor do
             The module that will be invoked by Mississippi to process incoming messages.
             It must implement the `Mississippi.Consumer.DataUpdater.Handler` behaviour.
             """
+          ],
+          cluster_distribution_strategy: [
+            type: {:in, [:uniform_quorum, :uniform_random, :uniform]},
+            default: :uniform_quorum,
+            doc: """
+            The strategy to use for redistributing consumer processes within the cluster.
+            """
           ]
         ]
       ]
     ]
   end
+
+  defp distribution_strategy!(:uniform_quorum), do: Horde.UniformQuorumDistribution
+  defp distribution_strategy!(:uniform_random), do: Horde.UniformRandomDistribution
+  defp distribution_strategy!(:uniform), do: Horde.UniformDistribution
 end
