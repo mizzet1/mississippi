@@ -25,9 +25,9 @@ defmodule Mississippi.Consumer do
 
     amqp_consumer_options = opts[:amqp_consumer_options]
 
-    queue_config = opts[:mississippi_config][:queues]
+    mississippi_config = opts[:mississippi_config]
 
-    message_handler = opts[:mississippi_config][:message_handler]
+    queue_config = mississippi_config[:queues]
 
     channels_per_connection = amqp_consumer_options[:channels]
 
@@ -47,7 +47,7 @@ defmodule Mississippi.Consumer do
     children = [
       {ExRabbitPool.PoolSupervisor,
        rabbitmq_config: amqp_consumer_options, connection_pools: [events_consumer_pool_config(connection_number)]},
-      {ConsumersSupervisor, queues: queue_config, message_handler: message_handler}
+      {ConsumersSupervisor, mississippi_config}
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)
