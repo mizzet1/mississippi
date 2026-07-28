@@ -82,7 +82,7 @@ defmodule Mississippi.Consumer.MessageTracker.Server do
 
     case :queue.peek(queue) do
       {:value, ^message} ->
-        @adapter.reject(state.channel, delivery_tag_from_message(message))
+        @adapter.reject(state.channel, delivery_tag_from_message(message), requeue: false)
         new_state = %State{state | queue: :queue.drop(queue)}
         # let's move on to the next message
         {:reply, :ok, new_state, {:continue, :process_next_message}}
