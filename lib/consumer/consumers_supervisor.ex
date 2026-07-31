@@ -109,6 +109,17 @@ defmodule Mississippi.Consumer.ConsumersSupervisor do
                 A string prefix for naming the queues on which Mississippi messages
                 will be sharded. Must be the same as the one used by the consumer.
                 """
+              ],
+              fullsweep_after: [
+                type: :non_neg_integer,
+                default: 20,
+                doc: """
+                Configures the `fullsweep_after` process flag on each AMQPDataConsumer process,
+                forcing more frequent full sweep garbage collections for those processes
+                specifically, to help bound their memory growth. AMQPDataConsumer processes
+                handle a high volume of short-lived binary payloads, so a much lower value than
+                the VM's default (65535) is used here.
+                """
               ]
             ]
           ],
