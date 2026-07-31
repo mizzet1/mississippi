@@ -56,6 +56,7 @@ defmodule Mississippi.Consumer.AMQPDataConsumer.Starter do
   defp amqp_data_consumers_childspecs(queues_config) do
     queue_prefix = queues_config[:prefix]
     queue_total = queues_config[:total_count]
+    fullsweep_after = queues_config[:fullsweep_after]
     max_index = queue_total - 1
 
     for queue_index <- 0..max_index do
@@ -63,7 +64,8 @@ defmodule Mississippi.Consumer.AMQPDataConsumer.Starter do
 
       init_args = [
         queue_name: queue_name,
-        queue_index: queue_index
+        queue_index: queue_index,
+        fullsweep_after: fullsweep_after
       ]
 
       {AMQPDataConsumer, init_args}
