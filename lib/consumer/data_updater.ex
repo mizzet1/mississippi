@@ -50,6 +50,16 @@ defmodule Mississippi.Consumer.DataUpdater do
   @spec get_data_updater_process(sharding_key :: term()) ::
           {:ok, pid()} | {:error, :data_updater_start_fail}
   def get_data_updater_process(sharding_key) do
+    case Registry.lookup(DataUpdater.Registry, {:sharding_key, sharding_key}) do
+      [{pid, _value}] ->
+        {:ok, pid}
+
+      [] ->
+        start_data_updater(sharding_key)
+    end
+  end
+
+  defp start_data_updater(sharding_key) do
     # TODO bring back :offload_start (?)
     case DynamicSupervisor.start_child(
            DataUpdater.Supervisor,

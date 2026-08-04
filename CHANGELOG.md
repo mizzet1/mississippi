@@ -9,6 +9,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Changed
+- `MessageTracker.get_message_tracker/1` and `DataUpdater.get_data_updater_process/1` now try a
+  `Horde.Registry` lookup first, only falling back to `Horde.DynamicSupervisor.start_child/2` when
+  the process is not already registered. 
+
 ## [1.0.0] - 2025-02-07
 ### Added
 - First Mississippi release.
