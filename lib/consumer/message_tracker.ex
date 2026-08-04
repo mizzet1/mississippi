@@ -25,7 +25,14 @@ defmodule Mississippi.Consumer.MessageTracker do
   @spec get_message_tracker(sharding_key :: term()) ::
           {:ok, pid()} | {:error, :message_tracker_start_fail}
   def get_message_tracker(sharding_key) do
-    name = {:via, Registry, {MessageTracker.Registry, {:sharding_key, sharding_key}}}
+    case GenServer.whereis(via_tuple(sharding_key)) do
+      nil -> start_message_tracker(sharding_key)
+      pid -> {:ok, pid}
+    end
+  end
+
+  defp start_message_tracker(sharding_key) do
+    name = via_tuple(sharding_key)
 
     # TODO bring back :offload_start (?)
     case DynamicSupervisor.start_child(
@@ -49,6 +56,10 @@ defmodule Mississippi.Consumer.MessageTracker do
 
         {:error, :message_tracker_start_fail}
     end
+  end
+
+  defp via_tuple(sharding_key) do
+    {:via, Registry, {MessageTracker.Registry, {:sharding_key, sharding_key}}}
   end
 
   @doc """

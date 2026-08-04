@@ -67,6 +67,31 @@ defmodule Mississippi.Consumer.DataUpdater.Test do
     end
 
     @tag :data_updater_orleans
+    test "a registered process is returned without starting a new one", %{
+      sharding_key: sharding_key,
+      data_updater: data_updater
+    } do
+      du_supervisor = Process.whereis(DataUpdater.Supervisor)
+      :erlang.trace(du_supervisor, true, [:receive])
+
+      {:ok, ^data_updater} = DataUpdater.get_data_updater_process(sharding_key)
+      refute_receive {:trace, ^du_supervisor, :receive, {:"$gen_call", _, {:start_child, _}}}
+    end
+
+    @tag :data_updater_orleans
+    test "a not yet registered process is started via the supervisor" do
+      sharding_key = "sharding_#{System.unique_integer()}"
+
+      du_supervisor = Process.whereis(DataUpdater.Supervisor)
+      :erlang.trace(du_supervisor, true, [:receive])
+
+      {:ok, pid} = DataUpdater.get_data_updater_process(sharding_key)
+
+      assert_receive {:trace, ^du_supervisor, :receive, {:"$gen_call", _, {:start_child, _}}}
+      assert Process.alive?(pid)
+    end
+
+    @tag :data_updater_orleans
     test "a process is spawned again if requested after termination", %{
       sharding_key: sharding_key,
       data_updater: data_updater
