@@ -25,6 +25,16 @@ defmodule Mississippi.Consumer.MessageTracker do
   @spec get_message_tracker(sharding_key :: term()) ::
           {:ok, pid()} | {:error, :message_tracker_start_fail}
   def get_message_tracker(sharding_key) do
+    case Registry.lookup(MessageTracker.Registry, {:sharding_key, sharding_key}) do
+      [{pid, _value}] ->
+        {:ok, pid}
+
+      [] ->
+        start_message_tracker(sharding_key)
+    end
+  end
+
+  defp start_message_tracker(sharding_key) do
     name = {:via, Registry, {MessageTracker.Registry, {:sharding_key, sharding_key}}}
 
     # TODO bring back :offload_start (?)
