@@ -62,6 +62,32 @@ defmodule Mississippi.Consumer.MessageTracker.Test do
     end
 
     @tag :message_tracker_orleans
+    test "a registered process is returned without starting a new one", %{
+      sharding_key: sharding_key
+    } do
+      {:ok, pid} = MessageTracker.get_message_tracker(sharding_key)
+
+      mt_supervisor = Process.whereis(MessageTracker.Supervisor)
+      :erlang.trace(mt_supervisor, true, [:receive])
+
+      {:ok, ^pid} = MessageTracker.get_message_tracker(sharding_key)
+      refute_receive {:trace, ^mt_supervisor, :receive, {:"$gen_call", _, {:start_child, _}}}
+    end
+
+    @tag :message_tracker_orleans
+    test "a not yet registered process is started via the supervisor", %{
+      sharding_key: sharding_key
+    } do
+      mt_supervisor = Process.whereis(MessageTracker.Supervisor)
+      :erlang.trace(mt_supervisor, true, [:receive])
+
+      {:ok, pid} = MessageTracker.get_message_tracker(sharding_key)
+
+      assert_receive {:trace, ^mt_supervisor, :receive, {:"$gen_call", _, {:start_child, _}}}
+      assert Process.alive?(pid)
+    end
+
+    @tag :message_tracker_orleans
     test "a process is spawned again if requested after termination", %{
       sharding_key: sharding_key
     } do

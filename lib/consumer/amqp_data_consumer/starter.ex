@@ -86,6 +86,7 @@ defmodule Mississippi.Consumer.AMQPDataConsumer.Starter do
   defp amqp_data_consumers_childspecs(queues, queues_config) do
     connection_options = queues_config[:amqp_consumer_options]
     exchange_name = queues_config[:events_exchange_name]
+    fullsweep_after = queues_config[:fullsweep_after]
     orchestrator = self()
 
     for {queue_index, queue_name} <- queues do
@@ -95,7 +96,8 @@ defmodule Mississippi.Consumer.AMQPDataConsumer.Starter do
           queue_index: queue_index,
           exchange_name: exchange_name,
           connection_options: connection_options,
-          orchestrator: orchestrator
+          orchestrator: orchestrator,
+          fullsweep_after: fullsweep_after
         ]
 
       {AMQPDataConsumer, init_args}

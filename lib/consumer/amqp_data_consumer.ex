@@ -38,6 +38,10 @@ defmodule Mississippi.Consumer.AMQPDataConsumer do
   @impl true
   def init(args) do
     Process.flag(:trap_exit, true)
+
+    fullsweep_after = Keyword.get(args, :fullsweep_after, 20)
+    Process.flag(:fullsweep_after, fullsweep_after)
+
     queue_name = Keyword.fetch!(args, :queue_name)
     exchange_name = Keyword.fetch!(args, :exchange_name)
     connection_options = Keyword.fetch!(args, :connection_options)

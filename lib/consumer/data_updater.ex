@@ -50,6 +50,13 @@ defmodule Mississippi.Consumer.DataUpdater do
   @spec get_data_updater_process(sharding_key :: term()) ::
           {:ok, pid()} | {:error, :data_updater_start_fail}
   def get_data_updater_process(sharding_key) do
+    case GenServer.whereis(via_tuple(sharding_key)) do
+      nil -> start_data_updater(sharding_key)
+      pid -> {:ok, pid}
+    end
+  end
+
+  defp start_data_updater(sharding_key) do
     # TODO bring back :offload_start (?)
     case DynamicSupervisor.start_child(
            DataUpdater.Supervisor,
@@ -87,8 +94,11 @@ defmodule Mississippi.Consumer.DataUpdater do
       message_handler: message_handler
     ]
 
-    name = {:via, Registry, {DataUpdater.Registry, {:sharding_key, sharding_key}}}
-    GenServer.start_link(__MODULE__, init_args, name: name)
+    GenServer.start_link(__MODULE__, init_args, name: via_tuple(sharding_key))
+  end
+
+  defp via_tuple(sharding_key) do
+    {:via, Registry, {DataUpdater.Registry, {:sharding_key, sharding_key}}}
   end
 
   @impl true

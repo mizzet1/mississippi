@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - AMQPDataConsumers do not crash when a shutdown is requested.
 - DataUpdaters and MessageTrackers are restarted only when requested.
 
+## [1.0.1] - Unreleased
+### Added
+- Allow configuring the `fullsweep_after` process flag on AMQPDataConsumer processes via the
+  `:fullsweep_after` queue option, to avoid accumulating uncollected binaries across many minor garbage collections before a full sweep runs. Defaults to 20.
+
+### Changed
+- `MessageTracker.get_message_tracker/1` and `DataUpdater.get_data_updater_process/1` now try a
+  `Horde.Registry` lookup first, only falling back to `Horde.DynamicSupervisor.start_child/2` when
+  the process is not already registered.
+
 ## [1.0.0] - 2025-02-07
 ### Added
 - First Mississippi release.
